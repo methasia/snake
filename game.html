@@ -1,0 +1,194 @@
+<html>
+
+	<canvas id="snake" width=800 height=800>
+		<script>
+			window.onload = function() {
+				var canvas = document.getElementById("snake");
+				var ct = canvas.getContext("2d");
+				
+				ct.fillStyle = "black";
+				ct.fillRect(0, 0, canvas.width, canvas.height);
+				ct.textAlign = "center"
+				ct.fillStyle = "white";
+				ct.font = "20px Arial";
+				ct.fillText("Up arrow - GO UP", canvas.width / 2, 30);
+				ct.fillText("Down arrow - GO DOWN", canvas.width / 2, 60);
+				ct.fillText("Left arrow - GO LEFT", canvas.width / 2, 90);
+				ct.fillText("Right arrow - GO RIGHT", canvas.width / 2, 120);
+				ct.fillText("Hold shift - GO FASTER", canvas.width / 2, 150);
+				ct.fillText("Hold ctrl - GO EVEN FASTER", canvas.width / 2, 180);
+				ct.fillText("Hold Z - GO EXTREMELY FAST", canvas.width / 2, 210);
+				ct.fillText("Press ESC - Pause", canvas.width / 2, 240);
+				ct.fillText("Click anywhere to begin.", canvas.width / 2, canvas.height / 2);
+				document.addEventListener("click", begin);
+				
+				function begin() {
+					
+					document.removeEventListener("click", begin);
+					start();
+				
+				
+					function start() {
+						paused = false;
+						
+						window.onblur = function() {
+							if (!paused) pauseSnake();
+						}
+						
+						
+						
+						document.addEventListener("keydown", press);
+						document.addEventListener("keyup", up);
+						slowfps = 10;
+						fps = slowfps;
+						oldfps = fps;
+						fastfps = 20;
+						superfps = 30;
+						ultrafps = 40;
+						x = 20;
+						y = 20;
+						tx = 10;
+						ty = 30;
+						ts = 20;
+						tc = canvas.height / ts;
+						dx = 0;
+						dy = 0;
+						gx = Math.floor(Math.random() * tc);
+						gy = Math.floor(Math.random() * tc);
+						tail = [];
+						defTailSize = 3;
+						tailSize = defTailSize;
+						score = 0;
+						inv = setInterval(snake, 1000/fps);
+						moved = false;
+						allowed = true;
+					
+						
+						
+						function snake() {
+							ct.textAlign = "left";
+							if (fps != oldfps) {
+								oldfps = fps;
+								clearInterval(inv);
+								inv = setInterval(snake, 1000/fps);
+								return;
+							}
+							tail.push({px: x, py: y});
+							x += dx;
+							y += dy;
+							moved = false;
+							if (tail.length > tailSize) {
+								tail.shift();
+							}
+							
+							 
+							if (x == -1 || x == tc || y == -1 || y == tc) {
+								if (allowed) allowed = false;
+								else lose();
+							} else if (x < 0 || x > tc - 1 || y < 0 || y > tc - 1) {
+								lose();
+							} else {
+								allowed = true;
+							}
+							
+							ct.fillStyle = "black";
+							ct.fillRect(0, 0, canvas.width, canvas.height);
+							ct.fillStyle = "red";
+							ct.fillRect(gx * ts, gy * ts, ts - 2, ts - 2);
+							
+							ct.fillStyle = "green";
+							for (var i=0;i<tail.length;i++) {
+								
+								ct.fillRect(tail[i].px * ts, tail[i].py * ts, ts - 2, ts - 2);
+								if (tail[i].px == x && tail[i].py == y && tailSize != defTailSize) lose();
+							}
+							
+							
+							if (x == gx && y == gy) {
+								tailSize++;
+								gx = Math.floor(Math.random() * tc);
+								gy = Math.floor(Math.random() * tc);
+								score++;
+							}
+							
+							ct.fillStyle = "white";
+							ct.font = "20px Arial";
+							ct.fillText("Score: " + score, tx, ty);
+							
+							ct.fillStyle = "white";
+							ct.font = "20px Arial";
+							ct.textAlign = "right";
+							ct.fillText("Speed: " + fps, canvas.width - tx, ty);
+						}
+						
+						function lose() {
+							gx = Math.floor(Math.random() * tc);
+							gy = Math.floor(Math.random() * tc);
+							x = 20;
+							y = 20;
+							tail = [];
+							tailSize = defTailSize;
+							score = 0;
+							allowed = true;
+						}
+						
+						function press(e) {
+							if (!moved) {
+								if (e.key == "ArrowLeft" && dx == 0 && !paused) {
+									dx = -1;
+									dy = 0;
+									moved = true;
+								} else if (e.key == "ArrowUp" && dy == 0 && !paused) {
+									dx = 0;
+									dy = -1;
+									moved = true;
+								} else if (e.key == "ArrowRight" && dx == 0 && !paused) {
+									dx = 1;
+									dy = 0;
+									moved = true;
+								} else if (e.key == "ArrowDown" && dy == 0 && !paused) {
+									dx = 0;
+									dy = 1;
+									moved = true;
+								}
+								if (e.shiftKey && !paused) fps = fastfps;
+								else if (e.ctrlKey && !paused) fps = superfps;
+								else if (e.key == "z" && !paused) fps = ultrafps;
+								else if (e.key == "Escape") pauseSnake();
+							}
+							
+							
+						}
+						
+						
+						
+						function up(e) {
+							if (e.key == "Shift" || e.key == "Control" || e.key == "z") fps = slowfps;
+						}
+						
+					
+					
+						function pauseSnake() {
+							if (!paused) {
+								paused = true;
+								clearInterval(inv);
+								ct.fillStyle = "black";
+								ct.fillRect(0, 0, canvas.width, canvas.height);
+								ct.textAlign = "center"
+								ct.fillStyle = "white";
+								ct.font = "20px Arial";
+								ct.fillText("Paused.", canvas.width / 2, canvas.height / 2 - 30);
+								ct.fillText("Press ESC again to resume.", canvas.width / 2, canvas.height / 2);
+							} else {
+								paused = false;
+								inv = setInterval(snake, 1000/fps);
+							}
+						}	
+					}
+				
+				}
+			}
+		</script>
+	</canvas>
+
+</html>
